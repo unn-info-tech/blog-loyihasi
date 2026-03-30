@@ -1,5 +1,10 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
+
+# Router yaratish
+router = DefaultRouter()
+router.register(r'postlar', views.PostViewSet, basename='post')
 
 
 
@@ -19,5 +24,7 @@ urlpatterns = [
     path('profil/<str:username>/', views.profil, name='profil'),
     path('kirish/', views.kirish, name='kirish'),
     path('chiqish/', views.chiqish, name='chiqish'),
+
+    path('api/', include(router.urls)),
 
 ]

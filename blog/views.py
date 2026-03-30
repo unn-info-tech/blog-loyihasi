@@ -221,3 +221,79 @@ def profil_tahrirlash(request):
         'p_forma': p_forma
     }
     return render(request, 'blog/profil_tahrirlash.html', context)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# ==============API uchun views.py================
+from rest_framework import viewsets
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import PostSerializer
+from .models import Post
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework.decorators import action
+
+class PostViewSet(viewsets.ModelViewSet):
+    """
+    Post lar uchun ViewSet
+    - list: Barcha postlar
+    - create: Yangi post
+    - retrieve: Bitta post
+    - update: Postni yangilash
+    - destroy: Postni o'chirish
+    """
+    queryset = Post.objects.filter(nashr_etilgan=True).order_by('-yaratilgan_sana')
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        """Yangi post yaratishda muallif ni avtomatik qo'shish"""
+        serializer.save(muallif=self.request.user)
+
+    def retrieve(self, request, *args, **kwargs):
+        """Bitta post olishda korildi sonini oshirish"""
+        instance = self.get_object()
+        instance.korildi += 1
+        instance.save()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def ommabop(self, request):
+        """Eng ko'p ko'rilgan postlar"""
+        postlar = Post.objects.filter(nashr_etilgan=True).order_by('-korildi')[:5]
+        serializer = self.get_serializer(postlar, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'])
+    def mening_postlarim(self, request):
+        """Foydalanuvchining o'z postlari"""
+        if not request.user.is_authenticated:
+            return Response(
+                {'xato': 'Tizimga kirish kerak'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        postlar = Post.objects.filter(muallif=request.user).order_by('-yaratilgan_sana')
+        serializer = self.get_serializer(postlar, many=True)
+        return Response(serializer.data)

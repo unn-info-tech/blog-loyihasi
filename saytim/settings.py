@@ -32,6 +32,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 # Application definition
 
 INSTALLED_APPS = [
+    'rest_framework',
     'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -96,6 +97,11 @@ DATABASES = {
 }
 
 
+# Django REST Framework sozlamalari
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
