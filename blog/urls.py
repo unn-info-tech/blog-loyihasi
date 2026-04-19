@@ -5,6 +5,8 @@ from . import views
 # Router yaratish
 router = DefaultRouter()
 router.register(r'postlar', views.PostViewSet, basename='post')
+router.register(r'izohlar', views.IzohViewSet, basename='izoh')
+router.register(r'profillar', views.ProfilViewSet, basename='profil')
 
 
 
@@ -24,7 +26,14 @@ urlpatterns = [
     path('profil/<str:username>/', views.profil, name='profil'),
     path('kirish/', views.kirish, name='kirish'),
     path('chiqish/', views.chiqish, name='chiqish'),
+    # ... HTML viewlar
 
-    path('api/', include(router.urls)),
+    # API Authentication
+    path('api/<str:version>/kirish/', views.login_api, name='login_api'),
+    path('api/<str:version>/chiqish/', views.logout_api, name='logout_api'),
+    path('api/<str:version>/royxatdan-otish/', views.register_api, name='register_api'),
+
+    # API CRUD
+    path('api/<str:version>/', include(router.urls)),
 
 ]

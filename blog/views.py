@@ -1,6 +1,6 @@
 from django.http import HttpResponse
 from django.shortcuts import render  # ← render import qiling
-from .models import Post  # ← Model ni import qilamiz
+from .models import Post, Profil  # ← Model ni import qilamiz
 from django.shortcuts import render, get_object_or_404
 from django.shortcuts import render, redirect
 from .models import Post
@@ -247,12 +247,18 @@ from rest_framework import viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import PostSerializer
+from .serializers import IzohSerializer, PostBatafsilSerializer, PostSerializer, ProfilSerializer
 from .models import Post
-
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
+from .permissions import FaqatMuallifOzgartiradi
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
+from .models import Like
 
 class PostViewSet(viewsets.ModelViewSet):
     """
@@ -265,7 +271,12 @@ class PostViewSet(viewsets.ModelViewSet):
     """
     queryset = Post.objects.filter(nashr_etilgan=True).order_by('-yaratilgan_sana')
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticatedOrReadOnly, FaqatMuallifOzgartiradi]
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['muallif', 'nashr_etilgan']
+    search_fields = ['sarlavha', 'matn']
+    ordering_fields = ['yaratilgan_sana', 'korildi']
 
     def perform_create(self, serializer):
         """Yangi post yaratishda muallif ni avtomatik qo'shish"""
@@ -278,6 +289,12 @@ class PostViewSet(viewsets.ModelViewSet):
         instance.save()
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
+    
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return PostBatafsilSerializer
+        return PostSerializer
 
     @action(detail=False, methods=['get'])
     def ommabop(self, request):
@@ -297,3 +314,96 @@ class PostViewSet(viewsets.ModelViewSet):
         postlar = Post.objects.filter(muallif=request.user).order_by('-yaratilgan_sana')
         serializer = self.get_serializer(postlar, many=True)
         return Response(serializer.data)
+    
+
+    @action(detail=True, methods=['post'])
+    def like(self, request, pk=None):
+        post = self.get_object()
+        user = request.user
+
+        like, created = Like.objects.get_or_create(user=user, post=post)
+
+        if not created:
+            # agar oldin like bosilgan bo‘lsa → unlike qilamiz
+            like.delete()
+            return Response({'xabar': 'Like olib tashlandi'})
+
+        return Response({'xabar': 'Like qo‘yildi'})
+    
+
+
+from rest_framework import viewsets
+from .models import Izoh
+
+class IzohViewSet(viewsets.ModelViewSet):
+    queryset = Izoh.objects.all()
+    serializer_class = IzohSerializer
+    
+
+
+class ProfilViewSet(viewsets.ModelViewSet):
+    queryset = Profil.objects.all()
+    serializer_class = ProfilSerializer
+
+
+
+
+@api_view(['POST'])
+def login_api(request):
+    """API orqali kirish"""
+    username = request.data.get('username')
+    password = request.data.get('password')
+
+    user = authenticate(username=username, password=password)
+
+    if user:
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'user_id': user.id,
+            'username': user.username
+        })
+    else:
+        return Response(
+            {'xato': 'Noto\'g\'ri login yoki parol'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    
+@api_view(['POST'])
+def logout_api(request):
+    """API orqali chiqish"""
+    if request.user.is_authenticated:
+        request.user.auth_token.delete()
+        return Response({'xabar': 'Muvaffaqiyatli chiqildi'})
+    return Response(
+        {'xato': 'Tizimga kirilmagan'},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+
+
+@api_view(['POST'])
+def register_api(request):
+    """Ro'yxatdan o'tish"""
+    username = request.data.get('username')
+    email = request.data.get('email')
+    password = request.data.get('password')
+
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {'xato': 'Bu username band'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = User.objects.create_user(
+        username=username,
+        email=email,
+        password=password
+    )
+
+    token = Token.objects.create(user=user)
+
+    return Response({
+        'token': token.key,
+        'user_id': user.id,
+        'username': user.username
+    }, status=status.HTTP_201_CREATED)

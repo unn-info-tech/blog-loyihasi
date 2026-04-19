@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Post, Izoh, PostRasm, Profil
+from .models import Like, Post, Izoh, PostRasm, Profil
 
 from django.contrib import admin
 from django.db.models import Count
@@ -55,3 +55,10 @@ class IzohAdmin(admin.ModelAdmin):
 @admin.register(PostRasm)
 class PostRasmAdmin(admin.ModelAdmin):
     list_display = ('post', 'rasm')
+
+
+
+@admin.register(Like)
+class LikeAdmin(admin.ModelAdmin):
+    list_display = ('user', 'post')
+    list_filter = ('user', 'post')

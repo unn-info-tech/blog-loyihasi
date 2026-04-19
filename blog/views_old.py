@@ -1,226 +1,226 @@
-from django.http import HttpResponse
-from django.shortcuts import render  # ← render import qiling
-from .models import Post  # ← Model ni import qilamiz
-from django.shortcuts import render, get_object_or_404
-from django.shortcuts import render, redirect
-from .models import Post
-from .forms import IzohForma, PostForma
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
-from .models import Post
-from .forms import FoydalanuvchiYangilashForma, ProfilYangilashForma
-from django.core.paginator import Paginator
+# from django.http import HttpResponse
+# from django.shortcuts import render  # ← render import qiling
+# from .models import Post  # ← Model ni import qilamiz
+# from django.shortcuts import render, get_object_or_404
+# from django.shortcuts import render, redirect
+# from .models import Post
+# from .forms import IzohForma, PostForma
+# from django.contrib import messages
+# from django.contrib.auth.decorators import login_required
+# from django.contrib.auth.models import User
+# from .models import Post
+# from .forms import FoydalanuvchiYangilashForma, ProfilYangilashForma
+# from django.core.paginator import Paginator
 
 
-def bosh_sahifa(request):
-    postlar_list = Post.objects.select_related('muallif').filter(
-        nashr_etilgan=True
-    ).order_by('-yaratilgan_sana')
+# def bosh_sahifa(request):
+#     postlar_list = Post.objects.select_related('muallif').filter(
+#         nashr_etilgan=True
+#     ).order_by('-yaratilgan_sana')
 
-    # Har sahifada 5 ta post
-    paginator = Paginator(postlar_list, 5)
+#     # Har sahifada 5 ta post
+#     paginator = Paginator(postlar_list, 5)
 
-    sahifa_raqami = request.GET.get('sahifa')
-    postlar = paginator.get_page(sahifa_raqami)
+#     sahifa_raqami = request.GET.get('sahifa')
+#     postlar = paginator.get_page(sahifa_raqami)
 
-    return render(request, 'blog/bosh.html', {'postlar': postlar})
+#     return render(request, 'blog/bosh.html', {'postlar': postlar})
 
 
 
-def biz_haqimizda(request):  # ← Yangi
-    return render(request, 'blog/biz_haqimizda.html')
+# def biz_haqimizda(request):  # ← Yangi
+#     return render(request, 'blog/biz_haqimizda.html')
 
 
-def aloqa(request):
-    return render(request, 'blog/aloqa.html')
+# def aloqa(request):
+#     return render(request, 'blog/aloqa.html')
 
 
-def portfolio(request):
-    return render(request, 'blog/portfolio.html')
+# def portfolio(request):
+#     return render(request, 'blog/portfolio.html')
 
 
 
 
 
-def post_batafsil(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    izohlar = post.izoh_set.all()  # Postga tegishli izohlarni olish
+# def post_batafsil(request, post_id):
+#     post = get_object_or_404(Post, id=post_id)
+#     izohlar = post.izoh_set.all()  # Postga tegishli izohlarni olish
 
-    # Ko'rildi sonini oshiramiz
-    post.korildi += 1
-    post.save()
+#     # Ko'rildi sonini oshiramiz
+#     post.korildi += 1
+#     post.save()
 
-    context = {'post': post, 'izohlar': izohlar}
-    return render(request, 'blog/post_batafsil.html', context)
+#     context = {'post': post, 'izohlar': izohlar}
+#     return render(request, 'blog/post_batafsil.html', context)
 
 
 
 
-def ommabop_postlar(request):
-    postlar = Post.objects.filter(
-        nashr_etilgan=True
-    ).order_by('-korildi')[:5]  # Eng ko'p ko'rilgan 5 ta
+# def ommabop_postlar(request):
+#     postlar = Post.objects.filter(
+#         nashr_etilgan=True
+#     ).order_by('-korildi')[:5]  # Eng ko'p ko'rilgan 5 ta
 
-    context = {'postlar': postlar}
-    return render(request, 'blog/ommabop.html', context)
+#     context = {'postlar': postlar}
+#     return render(request, 'blog/ommabop.html', context)
 
 
 
 
 
 
-@login_required
-def post_yaratish(request):
-    if request.method == 'POST':
-        forma = PostForma(request.POST, request.FILES)  # request.FILES qo'shildi!
-        if forma.is_valid():
-            post = forma.save(commit=False)
-            post.muallif = request.user
-            post.save()
-            messages.success(request, '✅ Post yaratildi!')
-            return redirect('bosh_sahifa')
-    else:
-        forma = PostForma()
+# @login_required
+# def post_yaratish(request):
+#     if request.method == 'POST':
+#         forma = PostForma(request.POST, request.FILES)  # request.FILES qo'shildi!
+#         if forma.is_valid():
+#             post = forma.save(commit=False)
+#             post.muallif = request.user
+#             post.save()
+#             messages.success(request, '✅ Post yaratildi!')
+#             return redirect('bosh_sahifa')
+#     else:
+#         forma = PostForma()
 
-    return render(request, 'blog/post_yaratish.html', {'forma': forma})
+#     return render(request, 'blog/post_yaratish.html', {'forma': forma})
 
 
-@login_required
-def post_tahrirlash(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+# @login_required
+# def post_tahrirlash(request, post_id):
+#     post = get_object_or_404(Post, id=post_id)
 
-    # Faqat muallif tahrirlay oladi
-    if post.muallif != request.user:
-        messages.error(request, '❌ Siz faqat o\'z postingizni tahrirlashingiz mumkin!')
-        return redirect('post_batafsil', post_id=post.id)
+#     # Faqat muallif tahrirlay oladi
+#     if post.muallif != request.user:
+#         messages.error(request, '❌ Siz faqat o\'z postingizni tahrirlashingiz mumkin!')
+#         return redirect('post_batafsil', post_id=post.id)
 
-    if request.method == 'POST':
-        forma = PostForma(request.POST, instance=post)
-        if forma.is_valid():
-            forma.save()
-            messages.success(request, '✅ Post yangilandi!')
-            return redirect('post_batafsil', post_id=post.id)
-    else:
-        forma = PostForma(instance=post)
+#     if request.method == 'POST':
+#         forma = PostForma(request.POST, instance=post)
+#         if forma.is_valid():
+#             forma.save()
+#             messages.success(request, '✅ Post yangilandi!')
+#             return redirect('post_batafsil', post_id=post.id)
+#     else:
+#         forma = PostForma(instance=post)
 
-    context = {'forma': forma, 'post': post}
-    return render(request, 'blog/post_tahrirlash.html', context)
+#     context = {'forma': forma, 'post': post}
+#     return render(request, 'blog/post_tahrirlash.html', context)
 
 
-@login_required
-def post_ochirish(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+# @login_required
+# def post_ochirish(request, post_id):
+#     post = get_object_or_404(Post, id=post_id)
 
-    if request.method == 'POST':
-        post.delete()
-        messages.success(request, '✅ Post o\'chirildi!')
-        return redirect('bosh_sahifa')
+#     if request.method == 'POST':
+#         post.delete()
+#         messages.success(request, '✅ Post o\'chirildi!')
+#         return redirect('bosh_sahifa')
 
-    return render(request, 'blog/post_ochirish.html', {'post': post})
+#     return render(request, 'blog/post_ochirish.html', {'post': post})
 
 
-@login_required
-def post_izoh(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
+# @login_required
+# def post_izoh(request, post_id):
+#     post = get_object_or_404(Post, id=post_id)
 
-    if request.method == 'POST':
-        forma = IzohForma(request.POST)
-        if forma.is_valid():
-            izoh = forma.save(commit=False)
-            izoh.post = post
-            izoh.muallif = request.user
-            izoh.save()
-            messages.success(request, '✅ Izoh qo\'shildi!')
-            return redirect('post_batafsil', post_id=post.id)
-    else:
-        forma = IzohForma()
-        return render(request, 'blog/post_izoh.html', {'forma': forma, 'post': post})
+#     if request.method == 'POST':
+#         forma = IzohForma(request.POST)
+#         if forma.is_valid():
+#             izoh = forma.save(commit=False)
+#             izoh.post = post
+#             izoh.muallif = request.user
+#             izoh.save()
+#             messages.success(request, '✅ Izoh qo\'shildi!')
+#             return redirect('post_batafsil', post_id=post.id)
+#     else:
+#         forma = IzohForma()
+#         return render(request, 'blog/post_izoh.html', {'forma': forma, 'post': post})
 
 
 
 
-from django.contrib.auth import login
-from .forms import RoyxatdanOtishForma
+# from django.contrib.auth import login
+# from .forms import RoyxatdanOtishForma
 
-def royxatdan_otish(request):
-    if request.method == 'POST':
-        forma = RoyxatdanOtishForma(request.POST)
-        if forma.is_valid():
-            user = forma.save()
-            login(request, user)
-            messages.success(request, f'✅ Xush kelibsiz, {user.username}!')
-            return redirect('bosh_sahifa')
-    else:
-        forma = RoyxatdanOtishForma()
+# def royxatdan_otish(request):
+#     if request.method == 'POST':
+#         forma = RoyxatdanOtishForma(request.POST)
+#         if forma.is_valid():
+#             user = forma.save()
+#             login(request, user)
+#             messages.success(request, f'✅ Xush kelibsiz, {user.username}!')
+#             return redirect('bosh_sahifa')
+#     else:
+#         forma = RoyxatdanOtishForma()
 
-    return render(request, 'blog/royxatdan_otish.html', {'forma': forma})
+#     return render(request, 'blog/royxatdan_otish.html', {'forma': forma})
 
 
 
 
-from django.contrib.auth import authenticate, login, logout
+# from django.contrib.auth import authenticate, login, logout
 
-def kirish(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        password = request.POST['password']
+# def kirish(request):
+#     if request.method == 'POST':
+#         username = request.POST['username']
+#         password = request.POST['password']
 
-        user = authenticate(request, username=username, password=password)
+#         user = authenticate(request, username=username, password=password)
 
-        if user is not None:
-            login(request, user)
-            messages.success(request, f'✅ Xush kelibsiz, {user.username}!')
-            return redirect('bosh_sahifa')
-        else:
-            messages.error(request, '❌ Noto\'g\'ri foydalanuvchi nomi yoki parol!')
+#         if user is not None:
+#             login(request, user)
+#             messages.success(request, f'✅ Xush kelibsiz, {user.username}!')
+#             return redirect('bosh_sahifa')
+#         else:
+#             messages.error(request, '❌ Noto\'g\'ri foydalanuvchi nomi yoki parol!')
 
-    return render(request, 'blog/kirish.html')
+#     return render(request, 'blog/kirish.html')
 
 
 
-def chiqish(request):
-    logout(request)
-    messages.info(request, '👋 Xayr! Tez orada qaytib kelasiz!')
-    return redirect('bosh_sahifa')
+# def chiqish(request):
+#     logout(request)
+#     messages.info(request, '👋 Xayr! Tez orada qaytib kelasiz!')
+#     return redirect('bosh_sahifa')
 
 
 
 
 
-def profil(request, username):
-    foydalanuvchi = get_object_or_404(User, username=username)
-    postlar = Post.objects.filter(muallif=foydalanuvchi, nashr_etilgan=True).order_by('-yaratilgan_sana')
+# def profil(request, username):
+#     foydalanuvchi = get_object_or_404(User, username=username)
+#     postlar = Post.objects.filter(muallif=foydalanuvchi, nashr_etilgan=True).order_by('-yaratilgan_sana')
 
-    context = {
-        'profil_egasi': foydalanuvchi,
-        'postlar': postlar,
-        'postlar_soni': postlar.count()
-    }
-    return render(request, 'blog/profil.html', context)
+#     context = {
+#         'profil_egasi': foydalanuvchi,
+#         'postlar': postlar,
+#         'postlar_soni': postlar.count()
+#     }
+#     return render(request, 'blog/profil.html', context)
 
 
 
-@login_required
-def profil_tahrirlash(request):
-    if request.method == 'POST':
-        f_forma = FoydalanuvchiYangilashForma(request.POST, instance=request.user)
-        p_forma = ProfilYangilashForma(request.POST, request.FILES, instance=request.user.profil)
+# @login_required
+# def profil_tahrirlash(request):
+#     if request.method == 'POST':
+#         f_forma = FoydalanuvchiYangilashForma(request.POST, instance=request.user)
+#         p_forma = ProfilYangilashForma(request.POST, request.FILES, instance=request.user.profil)
 
-        if f_forma.is_valid() and p_forma.is_valid():
-            f_forma.save()
-            p_forma.save()
-            messages.success(request, '✅ Profilingiz yangilandi!')
-            return redirect('profil', username=request.user.username)
-    else:
-        f_forma = FoydalanuvchiYangilashForma(instance=request.user)
-        p_forma = ProfilYangilashForma(instance=request.user.profil)
+#         if f_forma.is_valid() and p_forma.is_valid():
+#             f_forma.save()
+#             p_forma.save()
+#             messages.success(request, '✅ Profilingiz yangilandi!')
+#             return redirect('profil', username=request.user.username)
+#     else:
+#         f_forma = FoydalanuvchiYangilashForma(instance=request.user)
+#         p_forma = ProfilYangilashForma(instance=request.user.profil)
 
-    context = {
-        'f_forma': f_forma,
-        'p_forma': p_forma
-    }
-    return render(request, 'blog/profil_tahrirlash.html', context)
+#     context = {
+#         'f_forma': f_forma,
+#         'p_forma': p_forma
+#     }
+#     return render(request, 'blog/profil_tahrirlash.html', context)
 
 
 
