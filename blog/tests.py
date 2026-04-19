@@ -7,16 +7,19 @@ from .forms import PostForma
 from rest_framework.test import APITestCase
 from rest_framework import status
 from rest_framework.authtoken.models import Token
+import os
+
+TEST_PASSWORD = os.environ.get('TEST_PASSWORD', 'test_parol123')
+BOSHQA_TEST_PASSWORD = os.environ.get('BOSHQA_TEST_PASSWORD', 'parol123')
 
 class PostModelTest(TestCase):
     """Post modeli testlari"""
 
     def setUp(self):
         """Har bir test dan oldin ishga tushadi"""
-        test_password = 'test_parol123' # nosec B106
         self.user = User.objects.create_user(
             username='test_user',
-            password=test_password
+            password=TEST_PASSWORD
         )
 
         self.post = Post.objects.create(
@@ -42,17 +45,13 @@ class PostModelTest(TestCase):
         self.assertEqual(postlar_soni, 1)
 
 
-
-
-
 class BoshSahifaTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        test_password = 'test_parol123' # nosec B106
         self.user = User.objects.create_user(
             username='test_user',
-            password=test_password
+            password=TEST_PASSWORD
         )
 
         # Test postlar yaratish
@@ -93,14 +92,12 @@ class BoshSahifaTest(TestCase):
         self.assertNotContains(response, 'Post nash etilmagan')
 
 
-
 class PostFormaTest(TestCase):
 
     def setUp(self):
-        test_password = 'test_parol123' # nosec B106
         self.user = User.objects.create_user(
             username='test_user',
-            password=test_password
+            password=TEST_PASSWORD
         )
 
     def test_forma_togri_maydonlar(self):
@@ -138,10 +135,9 @@ class PostFormaTest(TestCase):
 class PostAPITest(APITestCase):
 
     def setUp(self):
-        test_password = 'test_parol123' # nosec B106
         self.user = User.objects.create_user(
             username='test_user',
-            password=test_password
+            password=TEST_PASSWORD
         )
         self.token = Token.objects.create(user=self.user)
 
@@ -197,7 +193,7 @@ class PostAPITest(APITestCase):
         """Boshqa foydalanuvchi postni o'zgartira olmaydi"""
         boshqa_user = User.objects.create_user(
             username='boshqa_user',
-            password='parol123'
+            password=BOSHQA_TEST_PASSWORD
         )
         boshqa_token = Token.objects.create(user=boshqa_user)
 
@@ -208,5 +204,3 @@ class PostAPITest(APITestCase):
         response = self.client.patch(url, data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-
