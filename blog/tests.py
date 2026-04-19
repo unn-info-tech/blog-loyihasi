@@ -13,9 +13,9 @@ class PostModelTest(TestCase):
 
     def setUp(self):
         """Har bir test dan oldin ishga tushadi"""
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user( # nosec B106
             username='test_user',
-            password='test_parol123'  # nosec
+            password='test_parol123'
         )
 
         self.post = Post.objects.create(
@@ -48,9 +48,9 @@ class BoshSahifaTest(TestCase):
 
     def setUp(self):
         self.client = Client()
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user( # nosec B106
             username='test_user',
-            password='test_parol123'  # nosec
+            password='test_parol123'
         )
 
         # Test postlar yaratish
@@ -95,9 +95,9 @@ class BoshSahifaTest(TestCase):
 class PostFormaTest(TestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user( # nosec B106
             username='test_user',
-            password='test_parol123'  # nosec
+            password='test_parol123'
         )
 
     def test_forma_togri_maydonlar(self):
@@ -135,9 +135,9 @@ class PostFormaTest(TestCase):
 class PostAPITest(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(
+        self.user = User.objects.create_user( # nosec B106
             username='test_user',
-            password='test_parol123'  # nosec
+            password='test_parol123'
         )
         self.token = Token.objects.create(user=self.user)
 
